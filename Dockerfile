@@ -2,30 +2,33 @@ FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies
+# Install base dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
     ca-certificates \
     lsb-release \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
-# Add Kong repo and install    
-RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu-noble/kong-3.x-ubuntu-noble.gpg \
-    | gpg --dearmor -o /usr/share/keyrings/kong.gpg \
+# Add Kong repository (stable method)
+RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu-noble/kong-3.x-ubuntu-noble.gpg -o /tmp/kong.gpg \
+    && gpg --dearmor -o /usr/share/keyrings/kong.gpg /tmp/kong.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/kong.gpg] https://download.konghq.com/gateway-3.x-ubuntu-noble default all" \
     > /etc/apt/sources.list.d/kong.list \
     && apt-get update \
     && apt-get install -y kong \
-    && rm -rf /var/lib/apt/lists/*
-
-
+    && kong version \
+    && rm -rf /var/lib/apt/lists/* /tmp/kong.gpg
 
 # Copy entrypoint
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# Run as kong user
+# Ensure correct permissions
+RUN chown -R kong:0 /usr/local/kong || true
+
+# Switch user
 USER kong
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
