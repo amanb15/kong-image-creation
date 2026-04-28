@@ -17,7 +17,7 @@ RUN curl -1sLf \
 
 # Install Kong
 RUN apt-get update \
-    && apt-get install -y kong \
+    && apt-get install -y kong-enterprise-edition \
     && kong version \
     && rm -rf /var/lib/apt/lists/*
 
