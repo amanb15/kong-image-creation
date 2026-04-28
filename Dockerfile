@@ -2,33 +2,32 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install base dependencies
+# Install base deps
 RUN apt-get update && apt-get install -y \
     curl \
-    gnupg \
     ca-certificates \
+    gnupg \
     lsb-release \
-    openssl \
     && rm -rf /var/lib/apt/lists/*
 
-# Add Kong repository (stable method)
-RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu-jammy/kong-3.x-ubuntu-jammy.gpg -o /tmp/kong.gpg \
-    && gpg --dearmor -o /usr/share/keyrings/kong.gpg /tmp/kong.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/kong.gpg] https://download.konghq.com/gateway-3.x-ubuntu-jammy default all" \
-    > /etc/apt/sources.list.d/kong.list \
-    && apt-get update \
+# Add Kong Cloudsmith repo (THIS is the correct step)
+RUN curl -1sLf \
+'https://dl.cloudsmith.io/public/kong/gateway-311/setup.deb.sh' \
+| bash
+
+# Install Kong
+RUN apt-get update \
     && apt-get install -y kong \
     && kong version \
-    && rm -rf /var/lib/apt/lists/* /tmp/kong.gpg
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy entrypoint
+# Add entrypoint
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# Ensure correct permissions
+# Fix permissions (optional safety)
 RUN chown -R kong:0 /usr/local/kong || true
 
-# Switch user
 USER kong
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
