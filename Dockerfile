@@ -10,12 +10,16 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     && rm -rf /var/lib/apt/lists/*
 
-# Add Kong repo and install
-RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu-$(lsb_release -cs)/kong-3.x-ubuntu-$(lsb_release -cs).gpg | gpg --dearmor -o /usr/share/keyrings/kong.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/kong.gpg] https://download.konghq.com/gateway-3.x-ubuntu-$(lsb_release -cs) default all" > /etc/apt/sources.list.d/kong.list \
+# Add Kong repo and install    
+RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu-noble/kong-3.x-ubuntu-noble.gpg \
+    | gpg --dearmor -o /usr/share/keyrings/kong.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/kong.gpg] https://download.konghq.com/gateway-3.x-ubuntu-noble default all" \
+    > /etc/apt/sources.list.d/kong.list \
     && apt-get update \
     && apt-get install -y kong \
     && rm -rf /var/lib/apt/lists/*
+
+
 
 # Copy entrypoint
 COPY docker-entrypoint.sh /docker-entrypoint.sh
