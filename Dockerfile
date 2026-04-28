@@ -12,9 +12,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Add Kong repository (stable method)
-RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu-noble/kong-3.x-ubuntu-noble.gpg -o /tmp/kong.gpg \
+RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu-jammy/kong-3.x-ubuntu-jammy.gpg -o /tmp/kong.gpg \
     && gpg --dearmor -o /usr/share/keyrings/kong.gpg /tmp/kong.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/kong.gpg] https://download.konghq.com/gateway-3.x-ubuntu-noble default all" \
+    && echo "deb [signed-by=/usr/share/keyrings/kong.gpg] https://download.konghq.com/gateway-3.x-ubuntu-jammy default all" \
     > /etc/apt/sources.list.d/kong.list \
     && apt-get update \
     && apt-get install -y kong \
