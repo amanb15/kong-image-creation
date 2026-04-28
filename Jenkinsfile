@@ -43,15 +43,3 @@ pipeline {
         }
     }
 }
-:::
-
----
-
-# 🚀 After fixing
-
-### 1️⃣ Commit changes
-
-```bash id="4k9e5g"
-git add Jenkinsfile
-git commit -m "fix Jenkinsfile syntax"
-git push
