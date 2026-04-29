@@ -21,7 +21,7 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                sh "docker build -t ${IMAGE_URI} ."
+                sh "docker build --platform linux/amd64 -t ${IMAGE_URI} ."
             }
         }
 
