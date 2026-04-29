@@ -21,7 +21,11 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                sh "docker build --platform linux/amd64 -t ${IMAGE_URI} ."
+                sh '''
+                docker build --platform linux/amd64 \
+                  -t ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${BUILD_NUMBER} \
+                  -t ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:3.9 .
+                '''
             }
         }
 
@@ -38,7 +42,10 @@ pipeline {
 
         stage('Push Image') {
             steps {
-                sh "docker push ${IMAGE_URI}"
+                sh '''
+                docker push ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${BUILD_NUMBER}
+                docker push ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:3.9
+                '''
             }
         }
     }
