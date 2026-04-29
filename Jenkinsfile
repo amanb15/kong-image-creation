@@ -36,11 +36,11 @@ pipeline {
 
                 docker buildx build \
                   --platform linux/amd64 \
-                  -t ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:3.9 \
+                  -t ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:3.9-amd64 \
                   -t ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${BUILD_NUMBER} \
                   --push .
                 '''
-            }
-        }
+    }
+}
     }
 }
