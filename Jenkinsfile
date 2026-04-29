@@ -7,7 +7,8 @@ pipeline {
         REPO = "kong-repo"
         IMAGE_NAME = "kong-custom"
         GAR_HOST = "${REGION}-docker.pkg.dev"
-        IMAGE_URI = "${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:3.9"
+        IMAGE_TAG = "3.9-amd64"
+        IMAGE_URI = "${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
     }
 
     stages {
@@ -32,15 +33,15 @@ pipeline {
         stage('Build & Push Image') {
             steps {
                 sh '''
-                docker buildx create --use || true
+                docker buildx inspect mybuilder >/dev/null 2>&1 || docker buildx create --name mybuilder --use
 
                 docker buildx build \
                   --platform linux/amd64 \
-                  -t ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:3.9-amd64 \
+                  -t ${IMAGE_URI} \
                   -t ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${BUILD_NUMBER} \
                   --push .
                 '''
-    }
-}
+            }
+        }
     }
 }
