@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 kong:3.9
+FROM --platform=linux/amd64 kong:3.14
 
 #USER root
 
