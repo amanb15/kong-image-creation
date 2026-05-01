@@ -1,21 +1,38 @@
-FROM kong/kong-gateway:3.9
+FROM ubuntu:22.04
 
-#USER root
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Copy your custom entrypoint (if needed)
-#COPY docker-entrypoint.sh /docker-entrypoint.sh
-#RUN chmod +x /docker-entrypoint.sh
+# Install required dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
 
-# (Optional) If you need plugins or configs, add here
-# COPY my-plugin /usr/local/kong/plugins/
+# Add Kong Cloudsmith repository (Enterprise)
+RUN curl -1sLf https://dl.cloudsmith.io/public/kong/gateway/setup.deb.sh | bash
 
-#USER kong
+# Install Kong Enterprise
+RUN apt-get update && apt-get install -y kong-enterprise-edition \
+    && rm -rf /var/lib/apt/lists/*
 
-#ENTRYPOINT ["/docker-entrypoint.sh"]
-#CMD ["kong", "docker-start"]
+# Create kong user (sometimes needed explicitly)
+RUN useradd -r -s /bin/false kong || true
 
-#EXPOSE 8000 8443 8001 8444
+# Set permissions (important to avoid runtime issues)
+RUN mkdir -p /usr/local/kong \
+    && chown -R kong:kong /usr/local/kong
 
-#STOPSIGNAL SIGQUIT
+# Switch to kong user
+USER kong
 
-#HEALTHCHECK --interval=10s --timeout=10s --retries=10 CMD kong health
+# Expose ports
+EXPOSE 8000 8443 8001 8444
+
+# Healthcheck
+HEALTHCHECK --interval=10s --timeout=10s --retries=10 CMD kong health || exit 1
+
+# Start Kong (IMPORTANT: use same as official image)
+CMD ["kong", "docker-start"]
