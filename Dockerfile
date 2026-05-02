@@ -1,23 +1,27 @@
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+ARG KONG_VERSION=3.9.0.0
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
     gnupg \
-    lsb-release \
     && rm -rf /var/lib/apt/lists/*
 
-# Add Kong Cloudsmith repo (OFFICIAL WAY)
-RUN curl -1sLf https://dl.cloudsmith.io/public/kong/gateway/setup.deb.sh | bash
+# Download Kong Enterprise package directly (IMPORTANT)
+RUN curl -fL \
+https://packages.konghq.com/public/gateway-39/deb/ubuntu/pool/jammy/main/k/ko/kong-enterprise-edition_${KONG_VERSION}_amd64.deb \
+-o /tmp/kong.deb
 
-# Install Kong Enterprise
-RUN apt-get update && apt-get install -y kong-enterprise-edition \
+# Install Kong from local package
+RUN apt-get update \
+    && apt-get install -y /tmp/kong.deb \
+    && rm -rf /tmp/kong.deb \
     && rm -rf /var/lib/apt/lists/*
 
-# Create kong user
+# Create kong user (if not exists)
 RUN useradd -r -s /bin/false kong || true
 
 # Fix permissions
@@ -26,7 +30,7 @@ RUN mkdir -p /usr/local/kong && chown -R kong:kong /usr/local/kong
 # Switch user
 USER kong
 
-# Ports
+# Expose ports
 EXPOSE 8000 8443 8001 8444
 
 # Healthcheck
