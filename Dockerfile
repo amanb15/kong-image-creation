@@ -2,21 +2,30 @@ FROM ubuntu:24.04
 
 USER root
 
+# Install prerequisites
 RUN set -ex; \
     apt-get update; \
     apt-get install -y curl gnupg ca-certificates lsb-release; \
     rm -rf /var/lib/apt/lists/*
 
-# Add Cloudsmith repo (REPLACE with your actual org/repo)
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/your-org/your-repo/setup.deb.sh' | bash
+# Add Cloudsmith repository (REPLACE with your actual repo)
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/YOUR_ORG/YOUR_REPO/setup.deb.sh' | bash
 
-# Install Kong Enterprise from Cloudsmith
+# Debug: verify repo added
+RUN ls -l /etc/apt/sources.list.d/ && cat /etc/apt/sources.list.d/* || true
+
+# Update and check available Kong packages
+RUN set -ex; \
+    apt-get update; \
+    apt-cache search kong || true
+
+# Install Kong (UPDATE package name if needed based on above output)
 RUN set -ex; \
     apt-get update; \
     apt-get install -y kong-enterprise-edition; \
     rm -rf /var/lib/apt/lists/*
 
-# Ensure proper permissions (same as your original intent)
+# Fix permissions and paths
 RUN chown kong:0 /usr/local/bin/kong \
     && chown -R kong:0 /usr/local/kong \
     && ln -s /usr/local/openresty/luajit/bin/luajit /usr/local/bin/luajit \
@@ -26,6 +35,7 @@ RUN chown kong:0 /usr/local/bin/kong \
 # Verify installation
 RUN kong version
 
+# Copy entrypoint
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 USER kong
