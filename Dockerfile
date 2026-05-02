@@ -1,40 +1,31 @@
-FROM ubuntu:22.04
-
-ENV DEBIAN_FRONTEND=noninteractive
-ARG KONG_VERSION=3.9.0.0
-
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    ca-certificates \
-    gnupg \
-    && rm -rf /var/lib/apt/lists/*
-
-# Download Kong Enterprise package directly (IMPORTANT)
-RUN curl -fL \
-https://packages.konghq.com/public/gateway-39/deb/ubuntu/pool/jammy/main/k/ko/kong-enterprise-edition_${KONG_VERSION}_amd64.deb \
--o /tmp/kong.deb
-
-# Install Kong from local package
-RUN apt-get update \
-    && apt-get install -y /tmp/kong.deb \
+cat <<EOF > Dockerfile
+FROM ubuntu:24.04
+   
+COPY kong.deb /tmp/kong.deb
+   
+RUN set -ex; \
+    apt-get update \
+    && apt-get install --yes /tmp/kong.deb \
+    && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/kong.deb \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create kong user (if not exists)
-RUN useradd -r -s /bin/false kong || true
-
-# Fix permissions
-RUN mkdir -p /usr/local/kong && chown -R kong:kong /usr/local/kong
-
-# Switch user
+    && chown kong:0 /usr/local/bin/kong \
+    && chown -R kong:0 /usr/local/kong \
+    && ln -s /usr/local/openresty/luajit/bin/luajit /usr/local/bin/luajit \
+    && ln -s /usr/local/openresty/luajit/bin/luajit /usr/local/bin/lua \
+    && ln -s /usr/local/openresty/nginx/sbin/nginx /usr/local/bin/nginx \
+    && kong version
+   
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+   
 USER kong
-
-# Expose ports
-EXPOSE 8000 8443 8001 8444
-
-# Healthcheck
-HEALTHCHECK --interval=10s --timeout=10s --retries=10 CMD kong health || exit 1
-
-# Start Kong
+   
+ENTRYPOINT ["/docker-entrypoint.sh"]
+   
+EXPOSE 8000 8443 8001 8444 8002 8445 8003 8446 8004 8447
+   
+STOPSIGNAL SIGQUIT
+   
+HEALTHCHECK --interval=10s --timeout=10s --retries=10 CMD kong health
+   
 CMD ["kong", "docker-start"]
+EOF
