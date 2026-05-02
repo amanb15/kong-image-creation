@@ -1,4 +1,3 @@
-cat <<EOF > Dockerfile
 FROM ubuntu:24.04
    
 COPY kong.deb /tmp/kong.deb
