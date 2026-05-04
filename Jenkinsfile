@@ -12,30 +12,13 @@ pipeline {
     }
 
     stages {
-        
-        stages {
-        stage('TEST') {
-            steps {
-                echo "🔥 THIS IS THE REAL PIPELINE"
-            }
-        }
+
         stage('Debug Info') {
             steps {
                 sh '''
                 echo "Running as user: $(whoami)"
                 docker --version
                 gcloud --version
-                '''
-            }
-        }
-
-        stage('Validate Env') {
-            steps {
-                sh '''
-                echo "PROJECT_ID=$PROJECT_ID"
-                echo "REGION=$REGION"
-                echo "REPO=$REPO"
-                echo "IMAGE_URI=$IMAGE_URI"
                 '''
             }
         }
@@ -54,11 +37,9 @@ pipeline {
         stage('Build & Push Image') {
             steps {
                 sh '''
-                # Initialize buildx
                 docker buildx create --name mybuilder --use || true
                 docker buildx inspect --bootstrap
 
-                # Build and push image
                 docker buildx build \
                   --platform linux/amd64 \
                   -t ${IMAGE_URI} \
@@ -70,10 +51,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Image successfully pushed: ${IMAGE_URI}"
+            echo "Image pushed: ${IMAGE_URI}"
         }
         failure {
-            echo "❌ Pipeline failed. Check logs."
+            echo "Pipeline failed"
         }
     }
 }
