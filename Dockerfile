@@ -1,37 +1,45 @@
-### 2. Core Logic of the Kong 3.9 Dockerfile
-The official Dockerfile is modular, but the functional equivalent of what is happening inside `kong/kong-gateway:3.9` looks like this:
-```dockerfile
-# Simplified version of the official Kong 3.9 Dockerfile
-FROM ubuntu:24.04
+FROM ubuntu:22.04
 
-# 1. Setup environment
-ENV KONG_VERSION=3.9.0
-ENV ASSET=remote
+USER root
 
-# 2. Install dependencies (OpenResty, Luajit, etc.)
-RUN set -ex; \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    curl ca-certificates libssl3 perl \
-    # ... other system deps ...
-    && rm -rf /var/lib/apt/lists/*
+ARG KONG_VERSION
+ENV KONG_VERSION=${KONG_VERSION}
 
-# 3. Install Kong package
-# Kong downloads the .deb package directly from their package repo
-RUN curl -fsSL [https://packages.konghq.com/public/gateway-39/debian/any-version/main/binary-amd64/kong-gateway_$](https://packages.konghq.com/public/gateway-39/debian/any-version/main/binary-amd64/kong-gateway_$){KONG_VERSION}_amd64.deb -o /tmp/kong.deb \
-    && apt-get update && apt-get install -y /tmp/kong.deb \
-    && rm -rf /tmp/kong.deb
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y curl gnupg ca-certificates lsb-release && \
+    rm -rf /var/lib/apt/lists/*
 
-# 4. Set permissions and symlinks
-RUN chown -R kong:0 /usr/local/kong \
-    && ln -s /usr/local/openresty/bin/resty /usr/local/bin/resty
+# Add Cloudsmith repo (REPLACE this)
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/YOUR_ORG/YOUR_REPO/setup.deb.sh' | bash
 
-# 5. Configuration
-EXPOSE 8000 8443 8001 8444 8002 8445
-STOPSIGNAL SIGQUIT
+# Debug (optional)
+RUN apt-get update && apt-cache search kong || true
+
+# Install Kong (OSS for POC)
+RUN apt-get update && apt-get install -y kong
+
+# Fix permissions
+RUN chown kong:0 /usr/local/bin/kong \
+    && chown -R kong:0 /usr/local/kong \
+    && ln -s /usr/local/openresty/luajit/bin/luajit /usr/local/bin/luajit \
+    && ln -s /usr/local/openresty/luajit/bin/luajit /usr/local/bin/lua \
+    && ln -s /usr/local/openresty/nginx/sbin/nginx /usr/local/bin/nginx
+
+# Verify install
+RUN kong version
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh && chown kong:kong /docker-entrypoint.sh
+
 USER kong
 
-# 6. Entrypoint (Points to a script included in the repo)
-COPY docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
+
+EXPOSE 8000 8443 8001 8444
+
+STOPSIGNAL SIGQUIT
+
+HEALTHCHECK --interval=60s --timeout=10s --retries=10 CMD kong health
+
 CMD ["kong", "docker-start"]
