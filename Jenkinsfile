@@ -6,16 +6,31 @@ pipeline {
         REGION = "us-central1"
         REPO = "my-repo"
         IMAGE_NAME = "kong-custom"
-        GAR_HOST = "${REGION}-docker.pkg.dev"
-        IMAGE_TAG = "3.9-amd64"
+        GAR_HOST = "us-central1-docker.pkg.dev"
+        IMAGE_TAG = "${BUILD_NUMBER}"
         IMAGE_URI = "${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
     }
 
     stages {
 
-        stage('Checkout') {
+        stage('Debug Info') {
             steps {
-                checkout scm
+                sh '''
+                echo "Running as user: $(whoami)"
+                docker --version
+                gcloud --version
+                '''
+            }
+        }
+
+        stage('Validate Env') {
+            steps {
+                sh '''
+                echo "PROJECT_ID=$PROJECT_ID"
+                echo "REGION=$REGION"
+                echo "REPO=$REPO"
+                echo "IMAGE_URI=$IMAGE_URI"
+                '''
             }
         }
 
@@ -33,15 +48,26 @@ pipeline {
         stage('Build & Push Image') {
             steps {
                 sh '''
-                docker buildx inspect mybuilder >/dev/null 2>&1 || docker buildx create --name mybuilder --use
+                # Initialize buildx
+                docker buildx create --name mybuilder --use || true
+                docker buildx inspect --bootstrap
 
+                # Build and push image
                 docker buildx build \
                   --platform linux/amd64 \
                   -t ${IMAGE_URI} \
-                  -t ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${BUILD_NUMBER} \
                   --push .
                 '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Image successfully pushed: ${IMAGE_URI}"
+        }
+        failure {
+            echo "❌ Pipeline failed. Check logs."
         }
     }
 }
