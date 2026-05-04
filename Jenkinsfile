@@ -12,7 +12,13 @@ pipeline {
     }
 
     stages {
-
+        
+        stages {
+        stage('TEST') {
+            steps {
+                echo "🔥 THIS IS THE REAL PIPELINE"
+            }
+        }
         stage('Debug Info') {
             steps {
                 sh '''
