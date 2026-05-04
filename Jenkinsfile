@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_ID = "kong-gke-493913"
-        REGION = "asia-south1"
-        REPO = "kong-repo"
+        PROJECT_ID = "kong-gke-495314"
+        REGION = "us-central1"
+        REPO = "my-repo"
         IMAGE_NAME = "kong-custom"
         GAR_HOST = "${REGION}-docker.pkg.dev"
         IMAGE_TAG = "3.9-amd64"
