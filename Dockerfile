@@ -13,8 +13,9 @@ RUN apt-get -o Acquire::ForceIPv4=true -o Acquire::http::Timeout=20 update && \
     rm -rf /var/lib/apt/lists/*
 
 # ===== Add Kong GPG key =====
-RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu/gpg | \
-    gpg --dearmor -o /usr/share/keyrings/kong.gpg
+RUN curl -fL https://download.konghq.com/gateway-3.x-ubuntu/gpg -o /tmp/kong.gpg && \
+    gpg --dearmor /tmp/kong.gpg > /usr/share/keyrings/kong.gpg && \
+    rm /tmp/kong.gpg
 
 # ===== Add Kong repo =====
 RUN echo "deb [signed-by=/usr/share/keyrings/kong.gpg] https://download.konghq.com/gateway-3.x-ubuntu jammy main" \
