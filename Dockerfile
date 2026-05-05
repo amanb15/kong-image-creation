@@ -5,7 +5,7 @@ ENV KONG_VERSION=${KONG_VERSION}
 
 # Install dependencies
 RUN yum update -y && \
-    yum install -y curl unzip tar shadow-utils
+    yum install -y unzip tar shadow-utils
 
 # Install Kong Enterprise RPM
 RUN set -ex; \
