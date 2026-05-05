@@ -9,6 +9,7 @@ pipeline {
         GAR_HOST = "${REGION}-docker.pkg.dev"
         IMAGE_TAG = "3.9-amd64"
         IMAGE_URI = "${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
+        IMAGE_URI_BUILD = "${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${BUILD_NUMBER}"
     }
 
     stages {
@@ -30,16 +31,19 @@ pipeline {
             }
         }
 
-        stage('Build & Push Image') {
+        stage('Build Image') {
             steps {
                 sh '''
-                docker buildx inspect mybuilder >/dev/null 2>&1 || docker buildx create --name mybuilder --use
+                docker build -t ${IMAGE_URI} -t ${IMAGE_URI_BUILD} .
+                '''
+            }
+        }
 
-                docker buildx build \
-                  --platform linux/amd64 \
-                  -t ${IMAGE_URI} \
-                  -t ${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${BUILD_NUMBER} \
-                  --push .
+        stage('Push Image') {
+            steps {
+                sh '''
+                docker push ${IMAGE_URI}
+                docker push ${IMAGE_URI_BUILD}
                 '''
             }
         }
