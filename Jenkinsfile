@@ -7,7 +7,7 @@ pipeline {
         REPO = "my-repo"
         IMAGE_NAME = "kong-custom"
         GAR_HOST = "${REGION}-docker.pkg.dev"
-        IMAGE_TAG = "3.9-amd64"
+        IMAGE_TAG = "3.9.0.0"
         IMAGE_URI = "${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
         IMAGE_URI_BUILD = "${GAR_HOST}/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${BUILD_NUMBER}"
     }
