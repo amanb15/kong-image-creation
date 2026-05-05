@@ -21,21 +21,24 @@ pipeline {
         }
 
         stage('Authenticate GCP') {
-    steps {
-        withCredentials([file(credentialsId: 'gcp-key', variable: 'GCLOUD_KEY')]) {
-            sh '''
-            echo "Key file path: $GCLOUD_KEY"
-            gcloud auth activate-service-account --key-file="$GCLOUD_KEY"
-            gcloud auth configure-docker us-central1-docker.pkg.dev -q
-            '''
+            steps {
+                withCredentials([file(credentialsId: 'gcp-key', variable: 'GCLOUD_KEY')]) {
+                    sh '''
+                    gcloud auth activate-service-account --key-file="$GCLOUD_KEY"
+                    gcloud auth configure-docker us-central1-docker.pkg.dev -q
+                    '''
+                }
+            }
         }
-    }
-}
 
         stage('Build Image') {
             steps {
                 sh '''
-                docker build -t ${IMAGE_URI} -t ${IMAGE_URI_BUILD} .
+                docker build \
+                  --build-arg KONG_VERSION=3.9.0.0 \
+                  -t ${IMAGE_URI} \
+                  -t ${IMAGE_URI_BUILD} \
+                  .
                 '''
             }
         }
