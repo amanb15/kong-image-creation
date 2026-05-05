@@ -1,41 +1,30 @@
-FROM ubuntu:22.04
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023
 
-USER root
+ARG KONG_VERSION
+ENV KONG_VERSION=${KONG_VERSION}
 
-# Install base dependencies
-RUN apt-get update && \
-    apt-get install -y curl gnupg ca-certificates lsb-release && \
-    rm -rf /var/lib/apt/lists/*
+# Install dependencies
+RUN yum update -y && \
+    yum install -y curl unzip tar shadow-utils
 
-# Add Kong GPG key
-RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu/gpg | \
-    gpg --dearmor -o /usr/share/keyrings/kong.gpg
+# Install Kong Enterprise RPM
+RUN set -ex; \
+    KONG_VERSION_SHORT=$(echo "$KONG_VERSION" | cut -d '.' -f 1,2 | tr -d '.'); \
+    DOWNLOAD_URL="https://packages.konghq.com/public/gateway-${KONG_VERSION_SHORT}/rpm/amzn/2023/x86_64/kong-enterprise-edition-${KONG_VERSION}.rpm"; \
+    curl -fL $DOWNLOAD_URL -o /tmp/kong.rpm; \
+    yum install -y /tmp/kong.rpm; \
+    rm /tmp/kong.rpm
 
-# Add Kong repository
-RUN echo "deb [signed-by=/usr/share/keyrings/kong.gpg] https://download.konghq.com/gateway-3.x-ubuntu jammy main" \
-    > /etc/apt/sources.list.d/kong.list
-
-# Install Kong
-RUN apt-get update && \
-    apt-get install -y kong && \
-    rm -rf /var/lib/apt/lists/*
-
-# Verify installation
+# Verify
 RUN kong version
 
-# Copy entrypoint
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# Use kong user (created by package)
 USER kong
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 EXPOSE 8000 8443 8001 8444
-
-STOPSIGNAL SIGQUIT
-
-HEALTHCHECK --interval=60s --timeout=10s --retries=10 CMD kong health
 
 CMD ["kong", "docker-start"]
