@@ -21,7 +21,7 @@ RUN set -ex; \
       -o /etc/yum.repos.d/kong.repo
 
 # ===== Install Kong Enterprise =====
-RUN yum install -y kong-enterprise
+RUN yum install -y kong-enterprise && \
     yum clean all
 
 # ===== Verify installation =====
