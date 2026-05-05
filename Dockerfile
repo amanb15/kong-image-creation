@@ -9,11 +9,10 @@ RUN yum update -y && \
 
 # Install Kong Enterprise RPM
 RUN set -ex; \
-    KONG_VERSION_SHORT=$(echo "$KONG_VERSION" | cut -d '.' -f 1,2 | tr -d '.'); \
-    DOWNLOAD_URL="https://packages.konghq.com/public/gateway-${KONG_VERSION_SHORT}/rpm/amzn/2023/x86_64/kong-enterprise-edition-${KONG_VERSION}.rpm"; \
-    curl -fL $DOWNLOAD_URL -o /tmp/kong.rpm; \
-    yum install -y /tmp/kong.rpm; \
-    rm /tmp/kong.rpm
+    KONG_VERSION_SHORT=$(echo "$KONG_VERSION" | cut -d '.' -f 1,2); \
+    curl -fsSL https://download.konghq.com/gateway-${KONG_VERSION_SHORT}.x-amazonlinux-2023/config.repo \
+      -o /etc/yum.repos.d/kong.repo; \
+    yum install -y kong-enterprise-${KONG_VERSION}
 
 # Verify
 RUN kong version
