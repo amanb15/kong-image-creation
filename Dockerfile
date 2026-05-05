@@ -4,31 +4,27 @@ USER root
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install minimal required tools
+# Install minimal tools
 RUN apt-get update && \
-    apt-get install -y curl tar gzip ca-certificates && \
+    apt-get install -y curl ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Download and install Kong (from GitHub release - reliable source)
-RUN curl -fL https://github.com/Kong/kong/releases/download/3.9.1/kong-3.9.1.linux.amd64.tar.gz \
-    -o /tmp/kong.tar.gz && \
-    tar -xzf /tmp/kong.tar.gz -C /usr/local && \
-    mv /usr/local/kong-* /usr/local/kong && \
-    ln -s /usr/local/kong/bin/kong /usr/local/bin/kong && \
-    rm /tmp/kong.tar.gz
-
-# Create kong user
-RUN useradd -r -s /bin/false kong && \
-    chown -R kong:kong /usr/local/kong
+# Download Kong .deb directly (NO GPG / repo)
+RUN curl -fL https://packages.konghq.com/public/gateway-3.x/deb/ubuntu/pool/jammy/main/k/kong/kong_3.9.1_amd64.deb \
+    -o /tmp/kong.deb && \
+    apt-get update && \
+    apt-get install -y /tmp/kong.deb && \
+    rm /tmp/kong.deb && \
+    rm -rf /var/lib/apt/lists/*
 
 # Verify installation
 RUN kong version
 
-# Copy entrypoint script
+# Copy entrypoint
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# Switch to kong user
+# Switch user
 USER kong
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
