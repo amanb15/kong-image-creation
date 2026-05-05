@@ -2,36 +2,32 @@ FROM ubuntu:22.04
 
 USER root
 
-ARG KONG_VERSION
-ENV KONG_VERSION=${KONG_VERSION}
-
-# Install dependencies
+# Install base dependencies
 RUN apt-get update && \
     apt-get install -y curl gnupg ca-certificates lsb-release && \
     rm -rf /var/lib/apt/lists/*
 
-# Add Cloudsmith repo (REPLACE this)
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/YOUR_ORG/YOUR_REPO/setup.deb.sh' | bash
+# Add Kong GPG key
+RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu/gpg | \
+    gpg --dearmor -o /usr/share/keyrings/kong.gpg
 
-# Debug (optional)
-RUN apt-get update && apt-cache search kong || true
+# Add Kong repository
+RUN echo "deb [signed-by=/usr/share/keyrings/kong.gpg] https://download.konghq.com/gateway-3.x-ubuntu jammy main" \
+    > /etc/apt/sources.list.d/kong.list
 
-# Install Kong (OSS for POC)
-RUN apt-get update && apt-get install -y kong
+# Install Kong
+RUN apt-get update && \
+    apt-get install -y kong && \
+    rm -rf /var/lib/apt/lists/*
 
-# Fix permissions
-RUN chown kong:0 /usr/local/bin/kong \
-    && chown -R kong:0 /usr/local/kong \
-    && ln -s /usr/local/openresty/luajit/bin/luajit /usr/local/bin/luajit \
-    && ln -s /usr/local/openresty/luajit/bin/luajit /usr/local/bin/lua \
-    && ln -s /usr/local/openresty/nginx/sbin/nginx /usr/local/bin/nginx
-
-# Verify install
+# Verify installation
 RUN kong version
 
+# Copy entrypoint
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh && chown kong:kong /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
+# Use kong user (created by package)
 USER kong
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
