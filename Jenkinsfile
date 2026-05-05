@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('TEST') {
             steps {
-                echo "🔥 PIPELINE IS ACTUALLY RUNNING"
+                echo "PIPELINE IS ACTUALLY RUNNING"
             }
         }
     }
