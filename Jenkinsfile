@@ -21,15 +21,16 @@ pipeline {
         }
 
         stage('Authenticate GCP') {
-            steps {
-                withCredentials([file(credentialsId: 'gcp-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                    sh '''
-                    gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-                    gcloud auth configure-docker ${GAR_HOST} -q
-                    '''
-                }
-            }
+    steps {
+        withCredentials([file(credentialsId: 'gcp-key', variable: 'GCLOUD_KEY')]) {
+            sh '''
+            echo "Key file path: $GCLOUD_KEY"
+            gcloud auth activate-service-account --key-file="$GCLOUD_KEY"
+            gcloud auth configure-docker us-central1-docker.pkg.dev -q
+            '''
         }
+    }
+}
 
         stage('Build Image') {
             steps {
