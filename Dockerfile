@@ -1,22 +1,29 @@
-FROM public.ecr.aws/amazonlinux/amazonlinux:2023
+FROM ubuntu:22.04
 
 USER root
 
-ARG KONG_VERSION
-ENV KONG_VERSION=${KONG_VERSION}
+ARG KONG_VERSION=3.9.1
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN yum update -y && \
-    yum install -y unzip tar shadow-utils && \
-    yum clean all
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y curl ca-certificates gnupg lsb-release && \
+    rm -rf /var/lib/apt/lists/*
 
-# Add Kong OSS repo
-RUN curl -fsSL https://download.konghq.com/gateway-3.x-amazonlinux-2023/config.repo \
-    -o /etc/yum.repos.d/kong.repo
+# Add Kong GPG key
+RUN curl -fsSL https://download.konghq.com/gateway-3.x-ubuntu/gpg | \
+    gpg --dearmor -o /usr/share/keyrings/kong.gpg
 
-# Install Kong OSS
-RUN yum install -y kong && \
-    yum clean all
+# Add Kong repo
+RUN echo "deb [signed-by=/usr/share/keyrings/kong.gpg] https://download.konghq.com/gateway-3.x-ubuntu jammy main" \
+    > /etc/apt/sources.list.d/kong.list
 
+# Install Kong
+RUN apt-get update && \
+    apt-get install -y kong && \
+    rm -rf /var/lib/apt/lists/*
+
+# Verify
 RUN kong version
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
