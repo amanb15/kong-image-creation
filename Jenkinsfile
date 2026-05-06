@@ -167,7 +167,7 @@ pipeline {
         }
         
         stage('Cleanup') {
-            always {
+            steps {
                 sh '''
                 echo "Cleaning up local Docker resources..."
                 
