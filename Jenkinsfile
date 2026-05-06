@@ -48,7 +48,7 @@ pipeline {
                   -t ${IMAGE_URI} \
                   -t ${IMAGE_URI_BUILD} \
                   -t ${IMAGE_URI_LATEST} \
-                  -f Dockerfile.CORRECT \
+                  -f Dockerfile \
                   .
                 
                 echo "✅ Docker image built successfully"
