@@ -181,7 +181,6 @@ pipeline {
                 
                 echo "✅ Cleanup completed"
                 '''
-            }
         }
     }
     
