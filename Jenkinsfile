@@ -79,7 +79,7 @@ pipeline {
                 
                 # Wait for Kong to fully start
                 echo "Waiting for Kong to start (up to 30 seconds)..."
-                for i in {1..30}; do
+                for i in $(seq 1 30); do
                     if curl -f http://localhost:8001/status > /dev/null 2>&1; then
                         echo "✅ Kong is healthy"
                         break
