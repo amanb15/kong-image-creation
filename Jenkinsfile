@@ -7,7 +7,7 @@ pipeline {
         
         // Artifact Registry configuration
         REGION = "us-central1"
-        REPO = "kong-registry"
+        REPO = "my-repo"
         IMAGE_NAME = "kong-dataplane"
         KONG_VERSION = "3.14.0"  // Use valid 3-part version
         GAR_HOST = "${REGION}-docker.pkg.dev"
