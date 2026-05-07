@@ -43,6 +43,8 @@ pipeline {
             steps {
                 sh '''
                 echo "Building Kong ${KONG_VERSION} Docker image..."
+                
+                
                 docker build \
                   --build-arg KONG_VERSION=${KONG_VERSION} \
                   -t ${IMAGE_URI} \
@@ -65,6 +67,9 @@ pipeline {
                 # Test 1: Verify Kong binary works
                 echo "Test 1: Checking Kong version..."
                 docker run --rm ${IMAGE_URI} kong version
+
+                # Cleanup old test container if exists
+                docker rm -f kong-test || true
                 
                 # Test 2: Start container and check health
                 echo "Test 2: Starting Kong container..."
