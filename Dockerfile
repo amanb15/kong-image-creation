@@ -1,4 +1,3 @@
-cat <<EOF > Dockerfile
 FROM ubuntu:24.04
    
 COPY deps/kong.deb /tmp/kong.deb
@@ -28,4 +27,3 @@ STOPSIGNAL SIGQUIT
 HEALTHCHECK --interval=10s --timeout=10s --retries=10 CMD kong health
    
 CMD ["kong", "docker-start"]
-EOF
