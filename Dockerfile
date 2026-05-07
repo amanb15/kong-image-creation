@@ -15,6 +15,9 @@ RUN set -ex; \
     && kong version
    
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+RUN chmod 755 /docker-entrypoint.sh && \
+    chown kong:kong /docker-entrypoint.sh
    
 USER kong
    
