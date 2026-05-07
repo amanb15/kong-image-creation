@@ -9,7 +9,7 @@ pipeline {
         REGION = "us-central1"
         REPO = "kong-registry"
         IMAGE_NAME = "kong-dataplane"
-        KONG_VERSION = "3.9.1"  // Use valid 3-part version
+        KONG_VERSION = "3.14.0"  // Use valid 3-part version
         GAR_HOST = "${REGION}-docker.pkg.dev"
         
         // Image URIs
